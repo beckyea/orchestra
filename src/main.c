@@ -17,7 +17,7 @@ volatile int sinTable[50];
 volatile double frequency;
 volatile char playSound;
 char buffer[PACKET_LENGTH];
-volatile int duration;
+volatile uint8_t duration;
 
 void init(void);
 void createSinTable(void);
@@ -28,18 +28,17 @@ int main (void) {
 	createSinTable();
 	playSound = 1;
 	while (true) {
-		//m_usb_tx_int(cnt);
-		//m_usb_tx_string("\n");
 		if (playSound) {
 			gatherPacketData();
 			OCR3A = duration * 800;
+			set(DDRB, 6);
 			TCNT3 = 0;
 			playSound = 1;
-			while (playSound) {
+			while (1) {
 				OCR1B = sinTable[cnt] * OCR1A / 100;
 			}
+			clear(DDRB, 6);
 		}
-		//m_green(OFF);
 	}
 	return 0;
 }
@@ -80,8 +79,8 @@ void createSinTable(void) {
 
 void gatherPacketData(void) {
 	m_rf_read(buffer, PACKET_LENGTH);
-	frequency = 650;//(*(int*)&buffer[0])/10;
-	duration = 5;//buffer[2]; // duration in centiseconds
+	frequency = 450; //(*(int*)&buffer[0])/10;
+	duration = 1000;//buffer[2]; // duration in centiseconds
 	OCR0A = 80000/frequency;
 	set(DDRD, 0);
 	set(DDRB, 6);
@@ -92,5 +91,5 @@ ISR(TIMER0_COMPA_vect) {
 	if (cnt == 50) { cnt = 0; }
 }
 
-ISR(INT2_vect) { playSound = 1; m_green(ON); }//m_green(ON);}
+ISR(INT2_vect) { playSound = 1; }//m_green(ON);}
 ISR(TIMER3_COMPA_vect) { playSound = 0; }//clear(DDRB, 6); } //m_green(OFF); }
