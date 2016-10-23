@@ -80,7 +80,7 @@ void createSinTable(void) {
 
 void gatherPacketData(void) {
 	m_rf_read(buffer, PACKET_LENGTH);
-	frequency = 440;//(*(int*)&buffer[0])/10;
+	frequency = 650;//(*(int*)&buffer[0])/10;
 	duration = 5;//buffer[2]; // duration in centiseconds
 	OCR0A = 80000/frequency;
 	set(DDRD, 0);
