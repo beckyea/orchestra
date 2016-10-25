@@ -14,7 +14,7 @@
 
 volatile uint8_t cnt;
 volatile int sinTable[50];
-volatile double frequency;
+volatile long frequency;
 volatile char newSound;
 volatile char stopSound;
 char buffer[PACKET_LENGTH];
@@ -28,18 +28,8 @@ int main (void) {
 	init();
 	createSinTable();
 	while (true) {
-		if (newSound && stopSound) {
-			gatherPacketData();
-			OCR3A = duration * 80;
-			m_green(ON);
-			TCNT3 = 0;
-			stopSound = 0;
-			while (!stopSound) {
-				OCR1B = sinTable[cnt] * OCR1A / 100;
-				if (TCNT1 > OCR1B) { TCNT1 = 0; }
-			}
-			m_green(OFF);
-		}
+		OCR1B = sinTable[cnt] * OCR1A / 100;
+		if (TCNT1 > OCR1B) { TCNT1 = 0; }
 	}
 	return 0;
 }
@@ -62,10 +52,9 @@ void init(void) {
 	set(TIMSK0, OCIE0A); // enable interrupt
 	// Set Timer 1 to enable the AC output
 	OCR1A = 100;
-	OCR1B = 5;
 	clear(TCCR1B, CS12); clear(TCCR1B, CS11); set(TCCR1B, CS10); // set prescaler to /1
 	set(TCCR1B, WGM13); set(TCCR1B, WGM12); set(TCCR1A, WGM11); set(TCCR1A, WGM10);  // timer mode to 15
-	set(DDRB, 6); // set B6 to enable the comparison output
+	//set(DDRB, 6); // set B6 to enable the comparison output
 	set(TCCR1A, COM1B1); clear(TCCR1A, COM1B0);  // set at OCR1B, clear at rollover
 	// Set Timer 3 to deal with duration
 	OCR1B = 100;
@@ -85,9 +74,9 @@ void createSinTable(void) {
 
 void gatherPacketData(void) {
 	m_rf_read(buffer, PACKET_LENGTH);
-	frequency = (*(int*)&buffer[0])/10;
+	frequency = (*(int*)&buffer[0]);
 	duration = buffer[2]; // duration in centiseconds
-	OCR0A = 80000/frequency;
+	OCR0A = 800000L/frequency;
 	//set(DDRB, 6);
 }
 
@@ -96,5 +85,13 @@ ISR(TIMER0_COMPA_vect) {
 	if (cnt >= 50) { cnt = 0; }
 }
 
-ISR(INT2_vect) { newSound = 1; m_red(ON); }//m_green(ON);}
-ISR(TIMER3_COMPA_vect) { stopSound = 1; m_red(OFF); }//clear(DDRB, 6); } //m_green(OFF); }
+ISR(INT2_vect) { 
+	set(DDRB, 6);
+	m_red(ON);
+	gatherPacketData();
+	OCR3A = duration * 80; 
+}
+ISR(TIMER3_COMPA_vect) { 
+	clear(DDRB, 6);
+	m_red(OFF); 
+}
