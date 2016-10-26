@@ -57,7 +57,7 @@ void init(void) {
 	//set(DDRB, 6); // set B6 to enable the comparison output
 	set(TCCR1A, COM1B1); clear(TCCR1A, COM1B0);  // set at OCR1B, clear at rollover
 	// Set Timer 3 to deal with duration
-	OCR1B = 100;
+	OCR3B = 100;
 	set(TCCR3B, CS32); clear(TCCR3B, CS31); clear(TCCR3B, CS30); // set clock prescalar to /64
 	clear(TCCR3B, WGM33); set(TCCR3B, WGM32); clear(TCCR3A, WGM31); clear(TCCR3A, WGM30); // set to mode 4
 	set(DDRC, 6); // set C6 to enable output
@@ -75,7 +75,7 @@ void createSinTable(void) {
 void gatherPacketData(void) {
 	m_rf_read(buffer, PACKET_LENGTH);
 	frequency = (*(int*)&buffer[0]);
-	duration = buffer[2]; // duration in centiseconds
+	duration = buffer[2]; // duration in centiseconds // 75 centiseconds
 	OCR0A = 800000L/frequency;
 	//set(DDRB, 6);
 }
