@@ -77,7 +77,6 @@ void gatherPacketData(void) {
 	frequency = (*(int*)&buffer[0]);
 	duration = buffer[2]; // duration in centiseconds // 75 centiseconds
 	OCR0A = 800000L/frequency;
-	//set(DDRB, 6);
 }
 
 ISR(TIMER0_COMPA_vect) {
