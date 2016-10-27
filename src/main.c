@@ -42,9 +42,10 @@ void init(void) {
 	m_clockdivide(2);
 	stopSound = 1;
 	newSound = 0;
+	set(DDRF, 1);
 	m_rf_open(CHANNEL, RX_ADDRESS, PACKET_LENGTH);
 	// Set Timer 0 for incrimenting the counter
-	OCR0A = 1000;
+	OCR0A = 100;
 	clear(TCCR0B, CS02); clear(TCCR0B, CS01); set(TCCR0B, CS00); // set prescaler to /1
 	clear(TCCR0B, WGM02); set(TCCR0A, WGM01); clear (TCCR0A, WGM00); // set to up to OCR0A mode
 	set(DDRD, 0); // enable output on D0
@@ -87,10 +88,13 @@ ISR(TIMER0_COMPA_vect) {
 ISR(INT2_vect) { 
 	set(DDRB, 6);
 	m_red(ON);
+	set(PORTF, 1);
 	gatherPacketData();
 	OCR3A = duration * 80; 
+	TCNT3 = 0;
 }
 ISR(TIMER3_COMPA_vect) { 
 	clear(DDRB, 6);
+	clear(PORTF, 1);
 	m_red(OFF); 
 }
